@@ -13,9 +13,9 @@ import (
 
 func main() {
 	checkHidSupport()
-	
+
 	queryOncePtr := flag.Bool("query", false, "Query sensors only once and then exit")
-	exporterPtr := flag.Bool(	"exporter", false, "Start a prometheus-compatible exporter server")
+	serverPtr := flag.Bool("server", false, "Start a prometheus-compatible exporter server")
 	serverPortPtr := flag.Int("port", 8080, "Port to listen on when starting a server")
 	flag.Parse()
 
@@ -23,7 +23,7 @@ func main() {
 
 	if queryOnce := *queryOncePtr; queryOnce {
 		sensor.QueryAndPrintOnce(deviceInfo)
-	} else if exporter := *exporterPtr; exporter {
+	} else if server := *serverPtr; server {
 		startServer(deviceInfo, *serverPortPtr)
 	} else {
 		flag.Usage()
@@ -45,7 +45,6 @@ func detectDevice() []hid.DeviceInfo {
 	}
 	return deviceInfo
 }
-
 
 var globalDeviceInfo []hid.DeviceInfo
 
