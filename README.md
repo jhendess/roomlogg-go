@@ -1,6 +1,6 @@
 # Prometheus exporter for DNT roomlogg-pro
 
-This is a small application to read temperature and humidity sensor data from a connected [dnt RoomLogg Pro](https://www.reichelt.com/de/en/roomlogg-pro-room-climate-control-station-dnt-roomlogg-pro-p267987.html) device and provide it as prometheus metrics exporter.
+This is a small application to read temperature and humidity sensor data from a connected [dnt RoomLogg Pro](https://www.dnt.de/Produkte/Raumklimastation-RoomLogg-PRO/) device and provide it as prometheus metrics exporter.
 The logic is based on the well documented reverse-engineering done by the [Raumklima](https://github.com/juergen-rocks/raumklima) tool.
 
 ## Usage
