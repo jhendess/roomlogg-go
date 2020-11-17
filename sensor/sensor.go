@@ -34,7 +34,7 @@ func QueryDeviceSensors(deviceInfo []hid.DeviceInfo) ([]*Sensor, error) {
 
 	device, err := deviceInfo[0].Open()
 	if err != nil {
-		log.Fatalf("Opening device failed: %v", err)
+		log.Printf("Opening device failed: %v\n", err)
 		return nil, err
 	}
 	defer closeDevice(device)

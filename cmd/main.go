@@ -71,11 +71,10 @@ func exporterFunc(c *gin.Context) {
 	if err != nil {
 		log.Printf("Unexpected error: %s\n", err)
 		c.String(500, "Internal server error")
+	} else {
+		value := buildExporterData(sensors)
+		c.String(200, value)
 	}
-
-	value := buildExporterData(sensors)
-
-	c.String(200, value)
 }
 
 func buildExporterData(sensors []*sensor.Sensor) string {
@@ -84,8 +83,8 @@ func buildExporterData(sensors []*sensor.Sensor) string {
 
 	for _, s := range sensors {
 		if !s.Absent {
-			fmt.Fprintf(&builder, "room_temperature{channel=\"%d\"} %.1f\n", s.Channel, s.Temperature)
-			fmt.Fprintf(&builder, "room_humidity{channel=\"%d\"} %d\n", s.Channel, s.Humidity)
+			_, _ = fmt.Fprintf(&builder, "room_temperature{channel=\"%d\"} %.1f\n", s.Channel, s.Temperature)
+			_, _ = fmt.Fprintf(&builder, "room_humidity{channel=\"%d\"} %d\n", s.Channel, s.Humidity)
 		}
 	}
 
