@@ -70,7 +70,8 @@ func getSensorDataFromBytes(response []byte) []*Sensor {
 		channelDataStart := 1 + (c * 3)
 		if response[channelDataStart+2] != 0xff {
 			temperatureRaw := binary.BigEndian.Uint16(response[channelDataStart : channelDataStart+2])
-			temperature := float32(temperatureRaw) / 10
+			temperatureSigned := int16(temperatureRaw)
+			temperature := float32(temperatureSigned) / 10
 			humidity := response[channelDataStart+2]
 			sensor = &Sensor{
 				Channel:     c,
