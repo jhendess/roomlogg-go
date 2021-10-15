@@ -9,7 +9,20 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 )
+
+// Seconds after which a previously available sensor is considered "lost"
+const secondsBeforeLost = 120
+
+// Keep track of when which sensor responded the last time to detect battery failures
+var lastSensorResponseMap map[int]*LastSensorResponse
+
+// LastSensorResponse is used to
+type LastSensorResponse struct {
+	lastResponse time.Time
+	absent       bool
+}
 
 func main() {
 	checkHidSupport()
@@ -24,6 +37,7 @@ func main() {
 	if queryOnce := *queryOncePtr; queryOnce {
 		sensor.QueryAndPrintOnce(deviceInfo)
 	} else if server := *serverPtr; server {
+		lastSensorResponseMap = make(map[int]*LastSensorResponse, 0)
 		startServer(deviceInfo, *serverPortPtr)
 	} else {
 		flag.Usage()
@@ -73,6 +87,7 @@ func exporterFunc(c *gin.Context) {
 		c.String(500, "Internal server error")
 	} else {
 		value := buildExporterData(sensors)
+		checkForLostSensors(sensors)
 		c.String(200, value)
 	}
 }
@@ -89,4 +104,27 @@ func buildExporterData(sensors []*sensor.Sensor) string {
 	}
 
 	return builder.String()
+}
+
+func checkForLostSensors(sensors []*sensor.Sensor) {
+	for _, s := range sensors {
+		if _, ok := lastSensorResponseMap[s.Channel]; !ok {
+			lastSensorResponseMap[s.Channel] = &LastSensorResponse{
+				lastResponse: time.Time{},
+				absent:       s.Absent,
+			}
+		}
+		lastSensorResponse := lastSensorResponseMap[s.Channel]
+		if !s.Absent {
+			if lastSensorResponse.absent {
+				log.Printf("Sensor %d was recovered", s.Channel)
+			}
+			lastSensorResponse.absent = false
+			lastSensorResponse.lastResponse = time.Now()
+		} else if !lastSensorResponse.absent && s.Absent &&
+			lastSensorResponse.lastResponse.Add(time.Second*secondsBeforeLost).Before(time.Now()) {
+			log.Printf("Sensor %d has been absent for %d seconds", s.Channel, secondsBeforeLost)
+			lastSensorResponse.absent = true
+		}
+	}
 }

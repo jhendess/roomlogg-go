@@ -15,6 +15,7 @@ func Test_getSensorDataFromBytes_positive(t *testing.T) {
 	parsed := getSensorDataFromBytes(rawData)
 	assert.Equal(t, float32(23.4), parsed[0].Temperature)
 	assert.Equal(t, 56, int(parsed[0].Humidity))
+	assert.False(t, parsed[0].Absent)
 }
 
 func Test_getSensorDataFromBytes_negative(t *testing.T) {
@@ -26,4 +27,15 @@ func Test_getSensorDataFromBytes_negative(t *testing.T) {
 	parsed := getSensorDataFromBytes(rawData)
 	assert.Equal(t, float32(-1.8), parsed[0].Temperature)
 	assert.Equal(t, 38, int(parsed[0].Humidity))
+	assert.False(t, parsed[0].Absent)
+}
+
+func Test_getSensorDataFromBytes_absent(t *testing.T) {
+	rawData := make([]byte, 64)
+	rawData[1] = 0x7f
+	rawData[2] = 0xff
+	rawData[3] = 0xff
+
+	parsed := getSensorDataFromBytes(rawData)
+	assert.True(t, parsed[0].Absent)
 }

@@ -68,7 +68,7 @@ func getSensorDataFromBytes(response []byte) []*Sensor {
 	for c := 0; c < 7; c++ {
 		var sensor *Sensor
 		channelDataStart := 1 + (c * 3)
-		if response[channelDataStart+2] != 0xff {
+		if response[channelDataStart] != 0x7f { // If a channel is missing 0x7f is returned in the first byte
 			temperatureRaw := binary.BigEndian.Uint16(response[channelDataStart : channelDataStart+2])
 			temperatureSigned := int16(temperatureRaw)
 			temperature := float32(temperatureSigned) / 10
