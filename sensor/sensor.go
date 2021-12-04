@@ -14,6 +14,18 @@ type Sensor struct {
 	Absent      bool
 }
 
+// CheckDeviceWithoutQuery tests whether the given device can be opened without reading sensor data
+func CheckDeviceWithoutQuery(deviceInfo []hid.DeviceInfo) bool {
+	valid := true
+	device, err := deviceInfo[0].Open()
+	if err != nil {
+		valid = false
+	}
+	closeDevice(device)
+	return valid
+}
+
+// QueryAndPrintOnce queries the device's sensors once and prints them out
 func QueryAndPrintOnce(deviceInfo []hid.DeviceInfo) {
 	sensors, err := QueryDeviceSensors(deviceInfo)
 	if err != nil {
@@ -29,6 +41,7 @@ func QueryAndPrintOnce(deviceInfo []hid.DeviceInfo) {
 	}
 }
 
+// QueryDeviceSensors queries the device's sensors and returns the sensor data
 func QueryDeviceSensors(deviceInfo []hid.DeviceInfo) ([]*Sensor, error) {
 	log.Printf("Opening device %v...\n", deviceInfo)
 

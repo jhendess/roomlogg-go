@@ -7,6 +7,7 @@ import (
 	"github.com/jhendess/roomlogg-go/sensor"
 	"github.com/karalabe/hid"
 	"log"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -73,10 +74,30 @@ func startServer(deviceInfo []hid.DeviceInfo, port int) {
 	log.Printf("Starting server on %s", addr)
 
 	r.GET("/metrics", exporterFunc)
+	r.GET("/health", healthCheck)
 
 	err := r.Run(addr)
 	if err != nil {
 		log.Fatalf("Starting server failed: %v", err)
+	}
+}
+
+// Simple health check function
+// 200 -> all OK
+// 404 -> device is missing
+// 500 -> sensor got lost
+func healthCheck(c *gin.Context) {
+	healthy := sensor.CheckDeviceWithoutQuery(globalDeviceInfo)
+	if healthy {
+		for _, response := range lastSensorResponseMap {
+			if response.absent {
+				c.Status(http.StatusInternalServerError)
+				return
+			}
+		}
+		c.Status(http.StatusOK)
+	} else {
+		c.Status(http.StatusNotFound)
 	}
 }
 
